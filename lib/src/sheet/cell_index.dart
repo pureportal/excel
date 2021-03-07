@@ -1,43 +1,43 @@
 part of excel;
 
+/// Position of Cell - Indexes
+// ignore: must_be_immutable
 class CellIndex extends Equatable {
-  CellIndex._({required int col, required int row}) {
-    this._columnIndex = col;
-    this._rowIndex = row;
-  }
-
   ///```
   ///CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0 ); // A1
   ///CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1 ); // A2
   ///
   ///```
-  static CellIndex indexByColumnRow(
+  CellIndex.indexByColumnRow(
       {required int columnIndex, required int rowIndex}) {
-    return CellIndex._(col: columnIndex, row: rowIndex);
+    this._columnIndex = columnIndex;
+    this._rowIndex = rowIndex;
   }
 
   ///```
   /// CellIndex.indexByColumnRow('A1'); // columnIndex: 0, rowIndex: 0
   /// CellIndex.indexByColumnRow('A2'); // columnIndex: 0, rowIndex: 1
   ///```
-  static CellIndex indexByString(String cellIndex) {
+/*   static CellIndex indexByString(String cellIndex) {
     var li = _cellCoordsFromCellId(cellIndex);
-    return CellIndex._(row: li[0], col: li[1]);
-  }
+    return CellIndex.indexByColumnRow(rowIndex: li[0], columnIndex: li[1]);
+  } */
 
-  /// `Pretty Expensive function`, it might slow your program `Avoid Usage`
-  String get cellId {
+  /// `Expensive function`, it might slow your program `Avoid Usage`
+/*    String get cellId {
     return getCellId(this.columnIndex, this.rowIndex);
-  }
+  }  */
 
   int _rowIndex = 0;
 
+  /// gets rowIndex of the cell
   int get rowIndex {
     return this._rowIndex;
   }
 
   int _columnIndex = 0;
 
+  /// gets columnIndex of the cell
   int get columnIndex {
     return this._columnIndex;
   }

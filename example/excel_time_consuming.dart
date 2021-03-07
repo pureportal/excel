@@ -8,13 +8,13 @@ void main(List<String> args) {
   Excel excel = Excel.createExcel();
   Sheet? sh = excel['Sheet1'];
   for (int i = 0; i < 8; i++) {
-    sh!.cell(CellIndex.indexByColumnRow(rowIndex: 0, columnIndex: i))!.value =
+    sh.cell(CellIndex.indexByColumnRow(rowIndex: 0, columnIndex: i))!.value =
         'Col $i';
     //sh.cell(CellIndex.indexByColumnRow(rowIndex: 0, columnIndex: i)).cellStyle =CellStyle(bold: true);
   }
   for (int row = 1; row < 9000; row++) {
     for (int col = 0; col < 8; col++) {
-      sh!
+      sh
           .cell(CellIndex.indexByColumnRow(rowIndex: row, columnIndex: col))!
           .value = 'value ${row}_$col';
     }

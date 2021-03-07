@@ -24,11 +24,11 @@ Excel _newExcel(Archive archive) {
 class Excel {
   late bool _colorChanges, _mergeChanges, _rtlChanges;
   late Archive _archive;
-  late Map<String?, XmlNode> _sheets;
+  late Map<String, XmlNode> _sheets;
   late Map<String, XmlDocument> _xmlFiles;
-  late Map<String?, String> _xmlSheetId;
-  late Map<String?, Map<String, int>> _cellStyleReferenced;
-  late Map<String?, Sheet?> _sheetMap;
+  late Map<String, String> _xmlSheetId;
+  late Map<String, Map<String, int>> _cellStyleReferenced;
+  late Map<String, Sheet> _sheetMap;
   late List<CellStyle> _cellStyleList;
   late List<String?> _patternFill, _mergeChangeLook, _rtlChangeLook;
   late _SharedStringsMaintainer _sharedStrings;
@@ -42,11 +42,11 @@ class Excel {
     _colorChanges = false;
     _mergeChanges = false;
     _rtlChanges = false;
-    _sheets = <String?, XmlNode>{};
+    _sheets = <String, XmlNode>{};
     _xmlFiles = <String, XmlDocument>{};
-    _xmlSheetId = <String?, String>{};
-    _sheetMap = <String?, Sheet?>{};
-    _cellStyleReferenced = <String?, Map<String, int>>{};
+    _xmlSheetId = <String, String>{};
+    _sheetMap = <String, Sheet>{};
+    _cellStyleReferenced = <String, Map<String, int>>{};
     _fontStyleList = <_FontStyle>[];
     _patternFill = <String?>[];
     _sharedStrings = _SharedStringsMaintainer.instance;
@@ -89,8 +89,7 @@ class Excel {
   ///If the `sheet` does not exist then it will create `sheet` with `New Sheet Object`
   ///
   Sheet operator [](String sheet) {
-    _availSheet(sheet);
-    return _sheetMap[sheet];
+    return _availSheet(sheet);
   }
 
   ///
@@ -106,7 +105,6 @@ class Excel {
   ///If `sheet` does not exist then it will be automatically created with contents of `sheetObject`
   ///
   ///Newly created sheet with name = `sheet` will have seperate reference and will not be linked to sheetObject.
-  ///
   operator []=(String sheet, Sheet sheetObject) {
     _availSheet(sheet);
 
@@ -114,34 +112,40 @@ class Excel {
   }
 
   ///
-  ///`sheet2Object` will be linked with `sheet1`.
+  ///`existingSheetObject` will be linked with `sheet1`.
   ///
   ///If `sheet1` does not exist then it will be automatically created.
   ///
-  ///Important Note: After linkage the operations performed on `sheet1`, will also get performed on `sheet2Object` and `vica-versa`.
+  ///Important Note: After linkage the operations performed on `sheet1`, will also get performed on `existingSheetObject` and `vica-versa`.
   ///
   void link(String sheet1, Sheet existingSheetObject) {
-    if (_isContain(_sheetMap[existingSheetObject.sheetName])) {
+    if (_sheetMap[existingSheetObject.sheetName] != null) {
       _availSheet(sheet1);
 
-      _sheetMap[sheet1] = _sheetMap[existingSheetObject.sheetName];
+      _sheetMap[sheet1] = _sheetMap[existingSheetObject.sheetName]!;
 
-      if (_isContain(_cellStyleReferenced[existingSheetObject.sheetName])) {
+      if (_cellStyleReferenced[existingSheetObject.sheetName] != null) {
         _cellStyleReferenced[sheet1] = Map<String, int>.from(
             _cellStyleReferenced[existingSheetObject.sheetName]!);
       }
     }
   }
 
+  ///Linkage of `sheet` with any other sheet's object/reference will be broken and a new reference will be returned.
   ///
-  ///If `sheet` is linked with any other sheet's object then it's link will be broke
-  ///
-  void unLink(String sheet) {
-    if (_isContain(_sheetMap[sheet])) {
-      ///
-      /// copying the sheet into itself thus resulting in breaking the linkage as Sheet._clone() will provide new reference;
-      copy(sheet, sheet);
+  ///If `sheet` does not exist then it returns null.
+  Sheet? unLink(String sheet) {
+    if (_sheetMap[sheet] != null) {
+      /// copying the sheet into itself
+      /// thus resulting in breaking the linkage as Sheet._clone() will provide new reference;
+      /// 
+      /// if copy is false then null is returned.
+      if (!copy(sheet, sheet)) {
+        return null;
+      }
+      return _sheetMap[sheet];
     }
+    return null;
   }
 
   ///
@@ -151,24 +155,32 @@ class Excel {
   ///
   ///If `toSheet` does not exist then it will be automatically created.
   ///
-  void copy(String fromSheet, String toSheet) {
-    if (_isContain(_sheetMap[fromSheet])) {
-      this[toSheet] = this[fromSheet]!;
+  bool copy(String fromSheet, String toSheet) {
+    var result = false;
+    if (_sheetMap[fromSheet] != null) {
+      this[toSheet] = this[fromSheet];
+      result = true;
     }
-    if (_isContain(_cellStyleReferenced[fromSheet])) {
+    if (_cellStyleReferenced[fromSheet] != null) {
       _cellStyleReferenced[toSheet] =
           Map<String, int>.from(_cellStyleReferenced[fromSheet]!);
     }
+    return result;
   }
 
   ///
   ///Changes the name from `oldSheetName` to `newSheetName`.
   ///
-  ///In order to rename : `oldSheetName` should exist in `excel.tables.keys` and `newSheetName` must not exist.
+  ///In order to rename :
   ///
-  void rename(String oldSheetName, String newSheetName) {
-    if (_isContain(_sheetMap[oldSheetName]) &&
-        !_isContain(_sheetMap[newSheetName])) {
+  ///** `oldSheetName` should exist in `excel.tables.keys`
+  ///
+  ///** `newSheetName` must not exist in `excel.tables.keys` .
+  ///
+  bool rename(String oldSheetName, String newSheetName) {
+    if (_sheetMap[oldSheetName] != null &&
+        _sheetMap[newSheetName] == null &&
+        oldSheetName != newSheetName) {
       ///
       /// rename from _defaultSheet var also
       if (_defaultSheet == oldSheetName) {
@@ -180,20 +192,22 @@ class Excel {
       ///
       /// delete the `oldSheetName` as sheet with `newSheetName` is having cloned `SheetObject of oldSheetName` with new reference,
       delete(oldSheetName);
+      return true;
     }
+    return false;
   }
 
   ///
   ///If `sheet` exist in `excel.tables.keys` and `excel.tables.keys.length >= 2` then it will be `deleted`.
   ///
-  void delete(String sheet) {
+  bool delete(String sheet) {
     ///
     /// remove the sheet `name` or `key` from the below locations if they exist.
 
     ///
     /// If it is not the last sheet then `delete` otherwise `return`;
     if (_sheetMap.length <= 1) {
-      return;
+      return false;
     }
 
     ///
@@ -282,6 +296,7 @@ class Excel {
     if (_isContain(_cellStyleReferenced[sheet])) {
       _cellStyleReferenced.remove(sheet);
     }
+    return true;
   }
 
   ///
@@ -314,12 +329,12 @@ class Excel {
   ///
   /// });
   ///```
-  Future<List<int>?> save({
+  List<int>? save({
     String fileName = 'FlutterExcel.xlsx',
-  }) async {
+  }) {
     Save s = Save._(this, parser);
     var onValue = s._save();
-    return await helper.SavingHelper.saveFile(onValue, fileName);
+    return helper.SavingHelper.saveFile(onValue, fileName);
   }
 
   ///
@@ -403,7 +418,7 @@ class Excel {
   ///If `sheet` exists and `rowIndex < maxRows` then it removes row at index = `rowIndex`
   ///
   void removeRow(String sheet, int rowIndex) {
-    if ( rowIndex >= 0 && _isContain(_sheetMap[sheet])) {
+    if (rowIndex >= 0 && _isContain(_sheetMap[sheet])) {
       _sheetMap[sheet]!.removeRow(rowIndex);
     }
   }
@@ -489,11 +504,15 @@ class Excel {
   ///
   ///Make `sheet` available if it does not exist in `_sheetMap`
   ///
-  void _availSheet(String sheet) {
-    if (!_isContain(_sheetMap[sheet])) {
+/*   Sheet _availSheet(String sheet) {
+    late var newSheet;
+
+    if (_sheetMap[sheet] == null) {
       _sheetMap[sheet] = Sheet._(this, sheet);
     }
-  }
+    newSheet = _sheetMap[sheet];
+    return newSheet;
+  } */
 
   ///
   ///Updates the contents of `sheet` of the `cellIndex: CellIndex.indexByColumnRow(0, 0);` where indexing starts from 0

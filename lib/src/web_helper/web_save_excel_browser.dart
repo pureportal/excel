@@ -2,20 +2,22 @@ import 'dart:html' as html;
 
 // A wrapper to save the
 class SavingHelper {
-  static Future<List<int>> saveFile(List<int> val, String fileName) async {
-    final blob = html.Blob([val]);
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    final anchor = html.document.createElement('a') as html.AnchorElement
-      ..href = url
-      ..style.display = 'none'
-      ..download = '$fileName';
-    html.document.body!.children.add(anchor);
+  static List<int>? saveFile(List<int>? val, String fileName) {
+    if (val != null) {
+      final blob = html.Blob([val]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.document.createElement('a') as html.AnchorElement
+        ..href = url
+        ..style.display = 'none'
+        ..download = '$fileName';
+      html.document.body!.children.add(anchor);
 
-    // download the file
-    anchor.click();
-    // cleanup
-    html.document.body!.children.remove(anchor);
-    html.Url.revokeObjectUrl(url);
+      // download the file
+      anchor.click();
+      // cleanup
+      html.document.body!.children.remove(anchor);
+      html.Url.revokeObjectUrl(url);
+    }
     return val;
   }
 }

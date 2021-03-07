@@ -1,6 +1,7 @@
 part of excel;
 
 /// Styling class for cells
+// ignore: must_be_immutable
 class CellStyle extends Equatable {
   String? _fontColorHex, _backgroundColorHex, _fontFamily;
   HorizontalAlign _horizontalAlign = HorizontalAlign.Left;

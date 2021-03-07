@@ -80,9 +80,9 @@ int _letterOnly(int rune) {
 
 String _twoDigits(int n) {
   if (n > 9) {
-    return "$n";
+    return '$n';
   }
-  return "0$n";
+  return '0$n';
 }
 
 /// Convert a number to character based column
@@ -149,11 +149,9 @@ String getSpanCellId(int startColumn, int startRow, int endColumn, int endRow) {
 
 ///returns updated SpanObject location as there might be
 ///cross-sectional interaction between the two spanning objects.
-Map<String, List<int>> _isLocationChangeRequired(
+List _isLocationChangeRequired(
     int startColumn, int startRow, int endColumn, int endRow, _Span spanObj) {
-  bool changeValue = false;
-
-  changeValue = (
+  bool changeValue = (
           // Overlapping checker
           startRow <= spanObj.rowSpanStart &&
               startColumn <= spanObj.columnSpanStart &&
@@ -203,10 +201,10 @@ Map<String, List<int>> _isLocationChangeRequired(
     }
   }
 
-  return Map<String, List<int>>.from({
-    "changeValue": List<int>.from([changeValue ? 1 : 0]),
-    "gotPosition": List<int>.from([startColumn, startRow, endColumn, endRow])
-  });
+  return [
+    changeValue,
+    [startColumn, startRow, endColumn, endRow]
+  ];
 }
 
 ///Returns Column based String alphabet when column index is passed

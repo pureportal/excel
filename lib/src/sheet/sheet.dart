@@ -1251,7 +1251,7 @@ class Sheet {
   ///return `SheetName`
   ///
   ///
-  String? get sheetName {
+  String get sheetName {
     return _sheet;
   }
 

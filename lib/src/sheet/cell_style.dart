@@ -1,10 +1,10 @@
 part of excel;
 
 /// Styling class for cells
-class CellStyle {
+class CellStyle extends Equatable {
   String? _fontColorHex, _backgroundColorHex, _fontFamily;
-  HorizontalAlign? _horizontalAlign;
-  VerticalAlign? _verticalAlign;
+  HorizontalAlign _horizontalAlign = HorizontalAlign.Left;
+  VerticalAlign _verticalAlign = VerticalAlign.Bottom;
   TextWrapping? _textWrapping;
   bool _bold = false, _italic = false;
   Underline _underline = Underline.None;
@@ -106,15 +106,15 @@ class CellStyle {
   ///
   ///Get Vertical Alignment
   ///
-  VerticalAlign? get verticalAlignment {
+  VerticalAlign get verticalAlignment {
     return this._verticalAlign;
   }
 
   ///
   ///Set Vertical Alignment
   ///
-  set verticalAlignment(VerticalAlign? verticalAlign) {
-    this._verticalAlign = verticalAlign ?? VerticalAlign.Bottom;
+  set verticalAlignment(VerticalAlign _) {
+    this._verticalAlign = _;
   }
 
   ///
@@ -127,8 +127,8 @@ class CellStyle {
   ///
   ///`Set Wrapping`
   ///
-  set wrap(TextWrapping? textWrapping) {
-    this._textWrapping = textWrapping;
+  set wrap(TextWrapping? _) {
+    this._textWrapping = _;
   }
 
   ///
@@ -141,8 +141,8 @@ class CellStyle {
   ///
   ///`Set FontFamily`
   ///
-  set fontFamily(String? family) {
-    this._fontFamily = family;
+  set fontFamily(String? _) {
+    this._fontFamily = _;
   }
 
   ///
@@ -155,8 +155,8 @@ class CellStyle {
   ///
   ///Set Font Size
   ///
-  set fontSize(int? _font_Size) {
-    this._fontSize = _font_Size;
+  set fontSize(int? _) {
+    this._fontSize = _;
   }
 
   ///
@@ -169,17 +169,17 @@ class CellStyle {
   ///
   ///Rotation varies from [90 to -90]
   ///
-  set rotation(int _rotate) {
-    if (_rotate > 90 || _rotate < -90) {
-      _rotate = 0;
+  set rotation(int _) {
+    if (_ > 90 || _ < -90) {
+      _ = 0;
     }
-    if (_rotate < 0) {
+    if (_ < 0) {
       /// The value is from 0 to -90 so now make it absolute and add it to 90
       ///
-      /// -(_rotate) + 90
-      _rotate = -(_rotate) + 90;
+      /// -(_) + 90
+      _ = -(_) + 90;
     }
-    this._rotation = _rotate;
+    this._rotation = _;
   }
 
   ///
@@ -192,8 +192,8 @@ class CellStyle {
   ///
   ///set `Underline`
   ///
-  set underline(Underline underline_) {
-    this._underline = underline_;
+  set underline(Underline _) {
+    this._underline = _;
   }
 
   ///
@@ -206,8 +206,8 @@ class CellStyle {
   ///
   ///Set `Bold`
   ///
-  set isBold(bool bold) {
-    this._bold = bold;
+  set isBold(bool _) {
+    this._bold = _;
   }
 
   ///
@@ -220,22 +220,21 @@ class CellStyle {
   ///
   ///Set `Italic`
   ///
-  set isItalic(bool italic) {
-    this._italic = italic;
+  set isItalic(bool _) {
+    this._italic = _;
   }
 
   @override
-  bool operator ==(o) {
-    return o.isBold == this.isBold && // bold
-        o.rotation == this.rotation && // rotation
-        o.isItalic == this.isItalic && // italic
-        o.fontSize == this.fontSize && // Font Size
-        o.fontFamily == this.fontFamily &&
-        o.runtimeType == this.runtimeType && // runtimeType
-        o.wrap == this.wrap && // Font Wrapping
-        o.fontColor == this.fontColor && // Font Color
-        o.verticalAlignment == this.verticalAlignment && // Vertical Align
-        o.horizontalAlignment == this.horizontalAlignment && // Horizontal Align
-        o.backgroundColor == this.backgroundColor; // Background Color
-  }
+  List<Object?> get props => [
+        _bold,
+        _rotation,
+        _italic,
+        _fontSize,
+        _fontFamily,
+        _textWrapping,
+        _fontColorHex,
+        _verticalAlign,
+        _horizontalAlign,
+        _backgroundColorHex,
+      ];
 }

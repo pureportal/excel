@@ -14,7 +14,7 @@ String getCellId(int colI, int rowI) {
 }
 
 String _isColorAppropriate(String value) {
-  String hex = value;
+  var hex = value;
   if (value.length == 7) {
     return value.replaceAll(RegExp(r'#'), 'FF').toString();
   }

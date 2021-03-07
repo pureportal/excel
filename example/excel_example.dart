@@ -10,9 +10,9 @@ void main(List<String> args) {
   var excel = Excel.decodeBytes(bytes);
   for (var table in excel.tables.keys) {
     print(table);
-    print(excel.tables[table].maxCols);
-    print(excel.tables[table].maxRows);
-    for (var row in excel.tables[table].rows) {
+    print(excel.tables[table]!.maxCols);
+    print(excel.tables[table]!.maxRows);
+    for (var row in excel.tables[table]!.rows) {
       print("$row");
     }
   }
@@ -20,19 +20,19 @@ void main(List<String> args) {
   //
   // Change sheet from rtl to ltr and vice-versa
   //
-  var sheet1rtl = excel['Sheet1'].isRTL;
+  var sheet1rtl = excel['Sheet1']!.isRTL;
 
-  excel['Sheet1'].isRTL = false;
-
-  print(
-      'Sheet1: ((previous) isRTL: $sheet1rtl) ---> ((current) isRTL: ${excel['Sheet1'].isRTL})');
-
-  var sheet2rtl = excel['Sheet2'].isRTL;
-
-  excel['Sheet2'].isRTL = true;
+  excel['Sheet1']!.isRTL = false;
 
   print(
-      'Sheet2: ((previous) isRTL: $sheet2rtl) ---> ((current) isRTL: ${excel['Sheet2'].isRTL})');
+      'Sheet1: ((previous) isRTL: $sheet1rtl) ---> ((current) isRTL: ${excel['Sheet1']!.isRTL})');
+
+  var sheet2rtl = excel['Sheet2']!.isRTL;
+
+  excel['Sheet2']!.isRTL = true;
+
+  print(
+      'Sheet2: ((previous) isRTL: $sheet2rtl) ---> ((current) isRTL: ${excel['Sheet2']!.isRTL})');
 
   CellStyle cellStyle = CellStyle(
     bold: true,
@@ -42,13 +42,13 @@ void main(List<String> args) {
   );
   cellStyle.rotation = -50;
 
-  var sheet = excel['mySheet'];
+  var sheet = excel['mySheet']!;
 
-  var cell = sheet.cell(CellIndex.indexByString("A1"));
+  var cell = sheet.cell(CellIndex.indexByString("A1"))!;
   cell.value = "Heya How are you I am fine ok goood night";
   cell.cellStyle = cellStyle;
 
-  var cell2 = sheet.cell(CellIndex.indexByString("E5"));
+  var cell2 = sheet.cell(CellIndex.indexByString("E5"))!;
   cell2.value = "Heya How night";
   cell2.cellStyle = cellStyle;
 
@@ -58,7 +58,7 @@ void main(List<String> args) {
   /// Iterating and changing values to desired type
   for (int row = 0; row < sheet.maxRows; row++) {
     sheet.row(row).forEach((cell) {
-      var val = cell.value; //  Value stored in the particular cell
+      var val = cell!.value; //  Value stored in the particular cell
       print('$val');
       cell.value = ' My custom Value ';
     });
@@ -75,7 +75,7 @@ void main(List<String> args) {
 
   excel.unLink('sheet1');
 
-  sheet = excel['sheet'];
+  sheet = excel['sheet']!;
 
   /// appending rows and checking the time complexity of it
   /* List<List<String>> list = List.generate(6000, (index) => List.generate(20, (index1) => '$index $index1'));
@@ -102,6 +102,6 @@ void main(List<String> args) {
   excel.save().then((fileBytes) {
     File(join(outputFile))
       ..createSync(recursive: true)
-      ..writeAsBytesSync(fileBytes);
+      ..writeAsBytesSync(fileBytes!);
   });
 }

@@ -2,27 +2,27 @@ part of excel;
 
 /// Styling class for cells
 class _FontStyle {
-  String _fontColorHex, _fontFamily;
-  bool _bold, _italic;
-  Underline _underline;
-  int _fontSize;
+  String? _fontColorHex, _fontFamily;
+  bool _bold = false, _italic = false;
+  Underline _underline = Underline.None;
+  int? _fontSize;
 
   _FontStyle(
-      {String fontColorHex = "FF000000",
-      int fontSize,
-      String fontFamily,
+      {String? fontColorHex = "FF000000",
+      int? fontSize,
+      String? fontFamily,
       bool bold = false,
       Underline underline = Underline.None,
       bool italic = false}) {
-    this._bold = bold ?? false;
+    this._bold = bold;
 
     this.fontSize = fontSize;
 
-    this._italic = italic ?? false;
+    this._italic = italic;
 
     this.fontFamily = fontFamily;
 
-    this._underline = underline ?? Underline.None;
+    this._underline = underline;
 
     if (fontColorHex != null) {
       this._fontColorHex = _isColorAppropriate(fontColorHex);
@@ -32,16 +32,12 @@ class _FontStyle {
   }
 
   /// Get Font Color
-  ///
-  ///
-  String get fontColor {
+  String? get fontColor {
     return this._fontColorHex;
   }
 
   /// Set Font Color
-  ///
-  ///
-  set fontColor(String fontColorHex) {
+  set fontColor(String? fontColorHex) {
     if (fontColorHex != null) {
       this._fontColorHex = _isColorAppropriate(fontColorHex);
     } else {
@@ -50,78 +46,61 @@ class _FontStyle {
   }
 
   /// `Get FontFamily`
-  ///
-  ///
-  String get fontFamily {
+  String? get fontFamily {
     return this._fontFamily;
   }
 
   /// `Set FontFamily`
-  ///
-  ///
-  set fontFamily(String family) {
+  set fontFamily(String? family) {
     this._fontFamily = family;
   }
 
   /// Get Font Size
-  ///
-  ///
-  int get fontSize {
+  int? get fontSize {
     return this._fontSize;
   }
 
   /// Set Font Size
-  ///
-  ///
-  set fontSize(int _font_Size) {
+  set fontSize(int? _font_Size) {
     this._fontSize = _font_Size;
   }
 
   /// Get `Underline`
-  ///
-  ///
-  get underline {
+  Underline get underline {
     return this._underline;
   }
 
   /// set `Underline`
-  ///
-  ///
-  set underline(Underline underline) {
+  set underline(Underline? underline) {
     this._underline = underline ?? Underline.None;
   }
 
   /// Get `Bold`
-  ///
-  ///
-  get isBold {
+  bool get isBold {
     return this._bold;
   }
 
   /// Set `Bold`
-  ///
-  ///
   set isBold(bool bold) {
-    this._bold = bold ?? false;
+    this._bold = bold;
   }
 
   /// Get `Italic`
-  ///
-  ///
-  get isItalic {
+  bool get isItalic {
     return this._italic;
   }
 
   /// Set `Italic`
-  ///
-  ///
   set isItalic(bool italic) {
-    this._italic = italic ?? false;
+    this._italic = italic;
   }
 
   @override
-  bool operator ==(o) {
-    return o.isBold == this.isBold && // bold
+  bool operator ==(Object o) {
+    if (identical(this, o)) return true;
+
+    return o is _FontStyle &&
+        o.isBold == this.isBold && // bold
         o.isItalic == this.isItalic && // italic
         o.fontSize == this.fontSize && // Font Size
         o.underline == this.underline && // Underline
@@ -130,15 +109,12 @@ class _FontStyle {
         o.fontColor == this.fontColor; // Font Color
   }
 
-  /* @override
-  String toString() {
-    String f = "Font Color :" + this.fontColor,
-        fs = "Font Size  :" + this.fontSize.toString(),
-        bold = "Bold       :" + this.isBold.toString(),
-        underline = "Underline  :" + this.underline.toString(),
-        italic = "Italic     :" + this.isItalic.toString(),
-        fontFamily = "Font Family:" + this.fontFamily.toString();
-
-    return f + "\n" + fs + "\n" + bold + "\n" + italic + "\n" + fontFamily;
-  } */
+  @override
+  int get hashCode =>
+      _bold.hashCode ^
+      _italic.hashCode ^
+      _fontSize.hashCode ^
+      _underline.hashCode ^
+      _fontFamily.hashCode ^
+      _fontColorHex.hashCode;
 }

@@ -186,12 +186,10 @@ enum FontFamily {
 }
 
 ///
-///
 ///returns the `Font Family Name`
 ///
-///
 String getFontFamily(FontFamily fontFamily) {
-  return (fontFamily.toString().replaceAll("FontFamily.", ""))
+  return (fontFamily.toString().replaceAll('FontFamily.', ''))
       .toString()
-      .replaceAll("_", " ");
+      .replaceAll('_', ' ');
 }

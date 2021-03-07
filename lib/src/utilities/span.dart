@@ -1,12 +1,13 @@
 part of excel;
 
 // For Spanning the columns and rows
-class _Span {
+// ignore: must_be_immutable
+class _Span extends Equatable {
   _Span();
 
-  List<int> __start = List<int>();
+  List<int> __start = <int>[];
 
-  List<int> __end = List<int>();
+  List<int> __end = <int>[];
 
   set _start(List<int> val) {
     __start = val;
@@ -32,14 +33,11 @@ class _Span {
     return __end[1];
   }
 
-  ///
-  ///returns true if the two objects are same
-  ///
   @override
-  bool operator ==(o) {
-    return this.rowSpanStart == o.rowSpanStart &&
-        this.rowSpanEnd == o.rowSpanEnd &&
-        this.columnSpanStart == o.columnSpanStart &&
-        this.columnSpanEnd == o.columnSpanEnd;
-  }
+  List<Object> get props => [
+        this.rowSpanStart,
+        this.rowSpanEnd,
+        this.columnSpanStart,
+        this.columnSpanEnd
+      ];
 }

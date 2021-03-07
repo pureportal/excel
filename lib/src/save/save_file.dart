@@ -1,18 +1,18 @@
 part of excel;
 
 class Save {
-  Excel _excel;
-  Map<String, ArchiveFile> _archiveFiles;
-  List<CellStyle> _innerCellStyle;
-  Parser parser;
-  Save._(Excel excel, Parser _parser) {
+  late Excel _excel;
+  late Map<String, ArchiveFile> _archiveFiles;
+  late List<CellStyle?> _innerCellStyle;
+  Parser? parser;
+  Save._(Excel excel, Parser? _parser) {
     _excel = excel;
     parser = _parser;
-    _archiveFiles = Map<String, ArchiveFile>();
-    _innerCellStyle = List<CellStyle>();
+    _archiveFiles = <String, ArchiveFile>{};
+    _innerCellStyle = <CellStyle?>[];
   }
 
-  List<int> _save() {
+  List<int>? _save() {
     if (_excel._colorChanges) {
       _processStylesFile();
     }
@@ -42,7 +42,7 @@ class Save {
     var clone = Archive();
     archive.files.forEach((file) {
       if (file.isFile) {
-        ArchiveFile copy;
+        ArchiveFile? copy;
         if (_archiveFiles.containsKey(file.name)) {
           copy = _archiveFiles[file.name];
         } else {
@@ -51,17 +51,17 @@ class Save {
           copy = ArchiveFile(file.name, content.length, content)
             ..compress = compress;
         }
-        clone.addFile(copy);
+        clone.addFile(copy!);
       }
     });
     return clone;
   }
 
-  Future<bool> _setDefaultSheet(String sheetName) async {
+  Future<bool> _setDefaultSheet(String? sheetName) async {
     int position = -1;
     List<XmlElement> sheetList =
-        _excel._xmlFiles['xl/workbook.xml'].findAllElements('sheet').toList();
-    XmlElement elementFound;
+        _excel._xmlFiles['xl/workbook.xml']!.findAllElements('sheet').toList();
+    late XmlElement elementFound;
 
     for (int i = 0; i < sheetList.length; i++) {
       var _sheetName = sheetList[i].getAttribute('name');
@@ -79,11 +79,14 @@ class Save {
       return true;
     }
 
-    _excel._xmlFiles['xl/workbook.xml'].findAllElements('sheets').first.children
+    _excel._xmlFiles['xl/workbook.xml']!
+        .findAllElements('sheets')
+        .first
+        .children
       ..removeAt(position)
       ..insert(0, elementFound);
 
-    String expectedSheet = await _excel._getDefaultSheet();
+    String? expectedSheet = await _excel._getDefaultSheet();
 
     return expectedSheet == sheetName;
   }
@@ -97,23 +100,24 @@ class Save {
       ///
       /// Create the sheet's xml file if it does not exist.
       if (!_isContain(_excel._sheets[sheet])) {
-        parser._createSheet(sheet);
+        parser!._createSheet(sheet);
       }
 
       /// Clear the previous contents of the sheet if it exists,
       /// in order to reduce the time to find and compare with the sheet rows
       /// and hence just do the work of putting the data only i.e. creating new rows
-      if (_excel._sheets[sheet]?.children?.isNotEmpty ?? false) {
-        _excel._sheets[sheet].children.clear();
+      if (_excel._sheets[sheet]?.children.isNotEmpty ?? false) {
+        _excel._sheets[sheet]!.children.clear();
       }
 
       /// `Above function is important in order to wipe out the old contents of the sheet.`
 
-      value._sheetData.forEach((rowIndex, map) {
-        var foundRow = _createNewRow(_excel._sheets[sheet], rowIndex);
+      value!._sheetData.forEach((rowIndex, map) {
+        var foundRow =
+            _createNewRow(_excel._sheets[sheet] as XmlElement, rowIndex!);
         map.forEach((columnIndex, data) {
-          if (data.value != null) {
-            _updateCell(sheet, foundRow, columnIndex, rowIndex, data.value);
+          if (data!.value != null) {
+            _updateCell(sheet, foundRow, columnIndex!, rowIndex, data.value);
           }
         });
       });
@@ -128,35 +132,35 @@ class Save {
           this._excel._xmlFiles.containsKey(this._excel._xmlSheetId[s])) {
         var itrSheetViewsRTLElement = this
             ._excel
-            ._xmlFiles[_excel._xmlSheetId[s]]
+            ._xmlFiles[_excel._xmlSheetId[s]!]!
             .findAllElements('sheetViews');
 
         if (itrSheetViewsRTLElement.isNotEmpty) {
           var itrSheetViewRTLElement = this
               ._excel
-              ._xmlFiles[_excel._xmlSheetId[s]]
+              ._xmlFiles[_excel._xmlSheetId[s]!]!
               .findAllElements('sheetView');
 
           if (itrSheetViewRTLElement.isNotEmpty) {
             /// clear all the children of the sheetViews here
             this
                 ._excel
-                ._xmlFiles[_excel._xmlSheetId[s]]
+                ._xmlFiles[_excel._xmlSheetId[s]!]!
                 .findAllElements('sheetViews')
-                ?.first
-                ?.children
-                ?.clear();
+                .first
+                .children
+                .clear();
           }
           this
               ._excel
-              ._xmlFiles[_excel._xmlSheetId[s]]
+              ._xmlFiles[_excel._xmlSheetId[s]!]!
               .findAllElements('sheetViews')
               .first
               .children
               .add(XmlElement(
                 XmlName('sheetView'),
                 [
-                  if (sheetObject.isRTL)
+                  if (sheetObject!.isRTL!)
                     XmlAttribute(XmlName('rightToLeft'), '1'),
                   XmlAttribute(XmlName('workbookViewId'), '0'),
                 ],
@@ -164,7 +168,7 @@ class Save {
         } else {
           this
               ._excel
-              ._xmlFiles[_excel._xmlSheetId[s]]
+              ._xmlFiles[_excel._xmlSheetId[s]!]!
               .findAllElements('worksheet')
               .first
               .children
@@ -172,7 +176,7 @@ class Save {
                 XmlElement(
                   XmlName('sheetView'),
                   [
-                    if (sheetObject.isRTL)
+                    if (sheetObject!.isRTL!)
                       XmlAttribute(XmlName('rightToLeft'), '1'),
                     XmlAttribute(XmlName('workbookViewId'), '0'),
                   ],
@@ -188,32 +192,31 @@ class Save {
     _selfCorrectSpanMap(_excel);
     _excel._mergeChangeLook.forEach((s) {
       if (_isContain(_excel._sheetMap['$s']) &&
-          _excel._sheetMap['$s']._spanList != null &&
-          _excel._sheetMap['$s']._spanList.isNotEmpty &&
+          _excel._sheetMap['$s']!._spanList.isNotEmpty &&
           _excel._xmlSheetId.containsKey(s) &&
           _excel._xmlFiles.containsKey(_excel._xmlSheetId[s])) {
         Iterable<XmlElement> iterMergeElement = _excel
-            ._xmlFiles[_excel._xmlSheetId[s]]
+            ._xmlFiles[_excel._xmlSheetId[s]!]!
             .findAllElements('mergeCells');
-        XmlElement mergeElement;
+        late XmlElement mergeElement;
         if (iterMergeElement.isNotEmpty) {
           mergeElement = iterMergeElement.first;
         } else {
-          if (_excel._xmlFiles[_excel._xmlSheetId[s]]
+          if (_excel._xmlFiles[_excel._xmlSheetId[s]!]!
                   .findAllElements('worksheet')
                   .length >
               0) {
-            int index = _excel._xmlFiles[_excel._xmlSheetId[s]]
+            int index = _excel._xmlFiles[_excel._xmlSheetId[s]!]!
                 .findAllElements('worksheet')
                 .first
                 .children
-                .indexOf(_excel._xmlFiles[_excel._xmlSheetId[s]]
+                .indexOf(_excel._xmlFiles[_excel._xmlSheetId[s]!]!
                     .findAllElements("sheetData")
                     .first);
             if (index == -1) {
               _damagedExcel();
             }
-            _excel._xmlFiles[_excel._xmlSheetId[s]]
+            _excel._xmlFiles[_excel._xmlSheetId[s]!]!
                 .findAllElements('worksheet')
                 .first
                 .children
@@ -222,7 +225,7 @@ class Save {
                     XmlElement(XmlName('mergeCells'),
                         [XmlAttribute(XmlName('count'), '0')]));
 
-            mergeElement = _excel._xmlFiles[_excel._xmlSheetId[s]]
+            mergeElement = _excel._xmlFiles[_excel._xmlSheetId[s]!]!
                 .findAllElements('mergeCells')
                 .first;
           } else {
@@ -231,7 +234,7 @@ class Save {
         }
 
         List<String> _spannedItems =
-            List<String>.from(_excel._sheetMap['$s'].spannedItems);
+            List<String>.from(_excel._sheetMap['$s']!.spannedItems);
 
         [
           ['count', _spannedItems.length.toString()],
@@ -240,7 +243,7 @@ class Save {
             mergeElement.attributes
                 .add(XmlAttribute(XmlName(value[0]), value[1]));
           } else {
-            mergeElement.getAttributeNode(value[0]).value = value[1];
+            mergeElement.getAttributeNode(value[0])!.value = value[1];
           }
         });
 
@@ -257,12 +260,12 @@ class Save {
   /// Writing Font Color in [xl/styles.xml] from the Cells of the sheets.
 
   _processStylesFile() {
-    _innerCellStyle = List<CellStyle>();
-    List<String> innerPatternFill = List<String>();
-    List<_FontStyle> innerFontStyle = List<_FontStyle>();
+    _innerCellStyle = <CellStyle?>[];
+    List<String?> innerPatternFill = <String?>[];
+    List<_FontStyle> innerFontStyle = <_FontStyle>[];
 
     _excel._sheetMap.forEach((sheetName, sheetObject) {
-      sheetObject._sheetData.forEach((_, colMap) {
+      sheetObject!._sheetData.forEach((_, colMap) {
         colMap.forEach((_, dataObject) {
           if (dataObject != null && dataObject.cellStyle != null) {
             int pos = _checkPosition(_innerCellStyle, dataObject.cellStyle);
@@ -276,7 +279,7 @@ class Save {
 
     _innerCellStyle.forEach((cellStyle) {
       _FontStyle _fs = _FontStyle(
-          bold: cellStyle.isBold,
+          bold: cellStyle!.isBold,
           italic: cellStyle.isItalic,
           fontColorHex: cellStyle.fontColor,
           underline: cellStyle.underline,
@@ -290,7 +293,7 @@ class Save {
       }
 
       /// Filling the inner usable extra list of backgroung color
-      String backgroundColor = cellStyle.backgroundColor;
+      String? backgroundColor = cellStyle.backgroundColor;
       if (!_excel._patternFill.contains(backgroundColor) &&
           !innerPatternFill.contains(backgroundColor)) {
         innerPatternFill.add(backgroundColor);
@@ -298,7 +301,7 @@ class Save {
     });
 
     XmlElement fonts =
-        _excel._xmlFiles['xl/styles.xml'].findAllElements('fonts').first;
+        _excel._xmlFiles['xl/styles.xml']!.findAllElements('fonts').first;
 
     var fontAttribute = fonts.getAttributeNode('count');
     if (fontAttribute != null) {
@@ -316,7 +319,7 @@ class Save {
             fontStyleElement._fontColorHex != "FF000000")
           XmlElement(
               XmlName('color'),
-              [XmlAttribute(XmlName('rgb'), fontStyleElement._fontColorHex)],
+              [XmlAttribute(XmlName('rgb'), fontStyleElement._fontColorHex!)],
               []),
 
         /// putting bold
@@ -343,9 +346,9 @@ class Save {
 
         /// putting fontFamily
         if (fontStyleElement.fontFamily != null &&
-            fontStyleElement.fontFamily.toLowerCase().toString() != "null" &&
+            fontStyleElement.fontFamily!.toLowerCase().toString() != "null" &&
             fontStyleElement.fontFamily != "" &&
-            fontStyleElement.fontFamily.isNotEmpty)
+            fontStyleElement.fontFamily!.isNotEmpty)
           XmlElement(XmlName('name'), [
             XmlAttribute(XmlName('val'), fontStyleElement.fontFamily.toString())
           ], []),
@@ -360,7 +363,7 @@ class Save {
     });
 
     XmlElement fills =
-        _excel._xmlFiles['xl/styles.xml'].findAllElements('fills').first;
+        _excel._xmlFiles['xl/styles.xml']!.findAllElements('fills').first;
 
     var fillAttribute = fills.getAttributeNode('count');
 
@@ -373,7 +376,7 @@ class Save {
     }
 
     innerPatternFill.forEach((color) {
-      if (color.length >= 2) {
+      if (color!.length >= 2) {
         if (color.substring(0, 2).toUpperCase() == 'FF') {
           fills.children.add(XmlElement(XmlName('fill'), [], [
             XmlElement(XmlName('patternFill'), [
@@ -401,7 +404,7 @@ class Save {
     });
 
     XmlElement celx =
-        _excel._xmlFiles['xl/styles.xml'].findAllElements('cellXfs').first;
+        _excel._xmlFiles['xl/styles.xml']!.findAllElements('cellXfs').first;
     var cellAttribute = celx.getAttributeNode('count');
 
     if (cellAttribute != null) {
@@ -413,7 +416,7 @@ class Save {
     }
 
     _innerCellStyle.forEach((cellStyle) {
-      String backgroundColor = cellStyle.backgroundColor;
+      String? backgroundColor = cellStyle!.backgroundColor;
 
       _FontStyle _fs = _FontStyle(
           bold: cellStyle.isBold,
@@ -423,10 +426,10 @@ class Save {
           fontSize: cellStyle.fontSize,
           fontFamily: cellStyle.fontFamily);
 
-      HorizontalAlign horizontalALign = cellStyle.horizontalAlignment;
-      VerticalAlign verticalAlign = cellStyle.verticalAlignment;
+      HorizontalAlign? horizontalALign = cellStyle.horizontalAlignment;
+      VerticalAlign? verticalAlign = cellStyle.verticalAlignment;
       int rotation = cellStyle.rotation;
-      TextWrapping textWrapping = cellStyle.wrap;
+      TextWrapping? textWrapping = cellStyle.wrap;
       int backgroundIndex = innerPatternFill.indexOf(backgroundColor),
           fontIndex = _fontStyleIndex(innerFontStyle, _fs);
 
@@ -444,7 +447,7 @@ class Save {
               innerPatternFill.contains(backgroundColor)) &&
           backgroundColor != "none" &&
           backgroundColor != "gray125" &&
-          backgroundColor.toLowerCase() != "lightgray") {
+          backgroundColor!.toLowerCase() != "lightgray") {
         attributes.add(XmlAttribute(XmlName('applyFill'), '1'));
       }
 
@@ -500,7 +503,7 @@ class Save {
     var count = 0;
 
     XmlElement shareString = _excel
-        ._xmlFiles['xl/${_excel._sharedStringsTarget}']
+        ._xmlFiles['xl/${_excel._sharedStringsTarget}']!
         .findAllElements('sst')
         .first;
 
@@ -511,7 +514,7 @@ class Save {
       count += ss.count;
 
       shareString.children.add(XmlElement(XmlName('si'), [], [
-        XmlElement(XmlName('t'), [], [XmlText(string)])
+        XmlElement(XmlName('t'), [], [XmlText(string!)])
       ]));
     });
 
@@ -522,7 +525,7 @@ class Save {
       if (shareString.getAttributeNode(value[0]) == null) {
         shareString.attributes.add(XmlAttribute(XmlName(value[0]), value[1]));
       } else {
-        shareString.getAttributeNode(value[0]).value = value[1];
+        shareString.getAttributeNode(value[0])!.value = value[1];
       }
     });
   }
@@ -585,7 +588,7 @@ class Save {
 
   // Manage value's type
   XmlElement _createCell(
-      String sheet, int columnIndex, int rowIndex, dynamic value) {
+      String? sheet, int columnIndex, int rowIndex, dynamic value) {
     if (value.runtimeType == String) {
       _excel._sharedStrings.add(value);
     }
@@ -599,11 +602,12 @@ class Save {
 
     if (_excel._colorChanges &&
         (_excel._sheetMap[sheet]?._sheetData != null) &&
-        _excel._sheetMap[sheet]._sheetData[rowIndex] != null &&
-        _excel._sheetMap[sheet]._sheetData[rowIndex][columnIndex]?.cellStyle !=
+        _excel._sheetMap[sheet]!._sheetData[rowIndex] != null &&
+        _excel._sheetMap[sheet]!._sheetData[rowIndex]![columnIndex]
+                ?.cellStyle !=
             null) {
-      CellStyle cellStyle =
-          _excel._sheetMap[sheet]._sheetData[rowIndex][columnIndex].cellStyle;
+      CellStyle? cellStyle = _excel
+          ._sheetMap[sheet]!._sheetData[rowIndex]![columnIndex]!.cellStyle;
       int upperLevelPos = _checkPosition(_excel._cellStyleList, cellStyle);
       if (upperLevelPos == -1) {
         int lowerLevelPos = _checkPosition(_innerCellStyle, cellStyle);
@@ -618,10 +622,11 @@ class Save {
         XmlAttribute(XmlName('s'), '$upperLevelPos'),
       );
     } else if (_excel._cellStyleReferenced.containsKey(sheet) &&
-        _excel._cellStyleReferenced[sheet].containsKey(rC)) {
+        _excel._cellStyleReferenced[sheet]!.containsKey(rC)) {
       attributes.insert(
         1,
-        XmlAttribute(XmlName('s'), '${_excel._cellStyleReferenced[sheet][rC]}'),
+        XmlAttribute(
+            XmlName('s'), '${_excel._cellStyleReferenced[sheet]![rC]}'),
       );
     }
 
@@ -664,7 +669,7 @@ class Save {
 
     return cell;
   } */
-  XmlElement _updateCell(String sheet, XmlElement row, int columnIndex,
+  XmlElement _updateCell(String? sheet, XmlElement row, int columnIndex,
       int rowIndex, dynamic value) {
     var cell = _createCell(sheet, columnIndex, rowIndex, value);
     row.children.add(cell);

@@ -1,14 +1,14 @@
 part of excel;
 
 class Data {
-  CellStyle _cellStyle;
+  CellStyle? _cellStyle;
   dynamic _value;
-  CellType _cellType;
-  Sheet _sheet;
-  String _sheetName;
-  bool _isFormula;
-  int _rowIndex;
-  int _colIndex;
+  CellType? _cellType;
+  late Sheet _sheet;
+  String? _sheetName;
+  bool? _isFormula;
+  int? _rowIndex;
+  int? _colIndex;
 
   ///
   ///It will clone the object by changing the `this` reference of previous DataObject and putting `new this` reference, with copying the values too
@@ -29,12 +29,12 @@ class Data {
   ///
   Data._(
     Sheet sheet,
-    int row,
-    int col, {
+    int? row,
+    int? col, {
     dynamic value_,
-    CellStyle cellStyle_,
-    bool isFormula_,
-    CellType cellType_,
+    CellStyle? cellStyle_,
+    bool? isFormula_,
+    CellType? cellType_,
   }) {
     this._sheet = sheet;
     this._value = value_;
@@ -47,38 +47,38 @@ class Data {
   }
 
   /// returns the newData object when called from Sheet Class
-  static Data newData(Sheet sheet, int row, int col) {
+  static Data newData(Sheet sheet, int? row, int? col) {
     return Data._(sheet, row, col);
   }
 
   /// returns the cell type
-  CellType get cellType {
+  CellType? get cellType {
     return this._cellType;
   }
 
   /// returns true is the cellType is CellType.Formula
-  bool get isFormula {
+  bool? get isFormula {
     return this._isFormula;
   }
 
   /// returns the row Index
-  int get rowIndex {
+  int? get rowIndex {
     return this._rowIndex;
   }
 
   /// returns the column Index
-  int get colIndex {
+  int? get colIndex {
     return this._colIndex;
   }
 
   /// returns the sheet-name
-  String get sheetName {
+  String? get sheetName {
     return this._sheetName;
   }
 
   /// returns the string based cellId as A1, A2 or Z5
   String get cellId {
-    return getCellId(this._colIndex, this._rowIndex);
+    return getCellId(this._colIndex!, this._rowIndex!);
   }
 
   set value(dynamic _value) {
@@ -104,8 +104,8 @@ class Data {
     return this._cellStyle;
   }
 
-  set cellStyle(CellStyle cellStyle_) {
-    _sheet._excel._colorChanges = true;
+  set cellStyle(CellStyle? cellStyle_) {
+    _sheet._excel!._colorChanges = true;
     this._cellStyle = cellStyle_;
   }
 }

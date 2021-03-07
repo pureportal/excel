@@ -29,7 +29,7 @@ String _isColorAppropriate(String value) {
 
 /// Convert a character based column
 int lettersToNumeric(String letters) {
-  var sum = 0, mul = 1, n;
+  int sum = 0, mul = 1, n;
   for (var index = letters.length - 1; index >= 0; index--) {
     var c = letters[index].codeUnitAt(0);
     n = 1;
@@ -53,14 +53,14 @@ Iterable<XmlElement> _findCells(XmlElement row) {
 }
 
 int _getCellNumber(XmlElement cell) {
-  return _cellCoordsFromCellId(cell.getAttribute('r'))[1];
+  return _cellCoordsFromCellId(cell.getAttribute('r')!)[1];
 }
 
 int _getRowNumber(XmlElement row) {
-  return int.parse(row.getAttribute('r'));
+  return int.parse(row.getAttribute('r')!);
 }
 
-int _checkPosition(List<CellStyle> list, CellStyle cellStyle) {
+int _checkPosition(List<CellStyle> list, CellStyle? cellStyle) {
   for (int i = 0; i < list.length; i++) {
     if (list[i] == cellStyle) {
       return i;
@@ -114,23 +114,16 @@ String _normalizeNewLine(String text) {
   return text.replaceAll('\r\n', '\n');
 }
 
-///
-///
-///
 ///Returns the coordinates from a cell name.
 ///
 ///       cellCoordsFromCellId("A2"); // returns [2, 1]
 ///       cellCoordsFromCellId("B3"); // returns [3, 2]
 ///
 ///It is useful to convert CellId to Indexing.
-///
-///
-///
 List<int> _cellCoordsFromCellId(String cellId) {
   var letters = cellId.runes.map(_letterOnly);
-  var lettersPart = utf8.decode(letters.where((rune) {
-    return rune > 0;
-  }).toList(growable: false));
+  var lettersPart =
+      utf8.decode(letters.where((rune) => rune > 0).toList(growable: false));
   var numericsPart = cellId.substring(lettersPart.length);
 
   return [
@@ -139,15 +132,9 @@ List<int> _cellCoordsFromCellId(String cellId) {
   ]; // [x , y]
 }
 
-///
-///
-///
 ///Throw error at situation where further processing is not possible
 ///It is also called when important parts of excel files are missing as corrupted excel file is used
-///
-///
-///
-_damagedExcel({String text}) {
+_damagedExcel({String? text}) {
   String t = '\nDamaged Excel file:';
   if (text != null) {
     t += ' $text';
@@ -155,24 +142,13 @@ _damagedExcel({String text}) {
   throw ArgumentError(t + '\n');
 }
 
-///
-///
-///
 ///return A2:B2 for spanning storage in unmerge list when [0,2] [2,2] is passed
-///
-///
-///
 String getSpanCellId(int startColumn, int startRow, int endColumn, int endRow) {
   return '${getCellId(startColumn, startRow)}:${getCellId(endColumn, endRow)}';
 }
 
-///
-///
-///
-///returns updated SpanObject location as there might be cross-sectional interaction between the two spanning objects.
-///
-///
-///
+///returns updated SpanObject location as there might be
+///cross-sectional interaction between the two spanning objects.
 Map<String, List<int>> _isLocationChangeRequired(
     int startColumn, int startRow, int endColumn, int endRow, _Span spanObj) {
   bool changeValue = false;
@@ -233,39 +209,24 @@ Map<String, List<int>> _isLocationChangeRequired(
   });
 }
 
-///
-///
-///
 ///Returns Column based String alphabet when column index is passed
 ///
 ///     `getColumnAlphabet(0); // returns A`
 ///     `getColumnAlphabet(5); // returns F`
-///
-///
 String getColumnAlphabet(int collIndex) {
   return '${_numericToLetters(collIndex + 1)}';
 }
 
-///
-///
-///
 ///Returns Column based int index when column alphabet is passed
 ///
 ///    `getColumnAlphabet("A"); // returns 0`
 ///    `getColumnAlphabet("F"); // returns 5`
-///
-///
-///
 int getColumnIndex(String columnAlphabet) {
   return _cellCoordsFromCellId('${columnAlphabet}')[1];
 }
 
-///
-///
 ///Checks if the fontStyle is already present in the list or not
-///
-///
-int _fontStyleIndex(List<_FontStyle> _fSList, _fs) {
+int _fontStyleIndex(List<_FontStyle> _fSList, _FontStyle _fs) {
   for (int i = 0; i < _fSList.length; i++) {
     if (_fSList[i] == _fs) {
       return i;

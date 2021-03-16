@@ -18,15 +18,15 @@ class CellIndex extends Equatable {
   /// CellIndex.indexByColumnRow('A1'); // columnIndex: 0, rowIndex: 0
   /// CellIndex.indexByColumnRow('A2'); // columnIndex: 0, rowIndex: 1
   ///```
-/*   static CellIndex indexByString(String cellIndex) {
+  static CellIndex indexByString(String cellIndex) {
     var li = _cellCoordsFromCellId(cellIndex);
     return CellIndex.indexByColumnRow(rowIndex: li[0], columnIndex: li[1]);
-  } */
+  }
 
   /// `Expensive function`, it might slow your program `Avoid Usage`
-/*    String get cellId {
+  String get cellId {
     return getCellId(this.columnIndex, this.rowIndex);
-  }  */
+  }
 
   int _rowIndex = 0;
 

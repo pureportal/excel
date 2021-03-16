@@ -3,13 +3,13 @@ part of excel;
 class Save {
   late Excel _excel;
   late Map<String, ArchiveFile> _archiveFiles;
-  late List<CellStyle?> _innerCellStyle;
+  late List<CellStyle> _innerCellStyle;
   Parser? parser;
   Save._(Excel excel, Parser? _parser) {
     _excel = excel;
     parser = _parser;
     _archiveFiles = <String, ArchiveFile>{};
-    _innerCellStyle = <CellStyle?>[];
+    _innerCellStyle = <CellStyle>[];
   }
 
   List<int>? _save() {
@@ -112,12 +112,12 @@ class Save {
 
       /// `Above function is important in order to wipe out the old contents of the sheet.`
 
-      value!._sheetData.forEach((rowIndex, map) {
+      value._sheetData.forEach((rowIndex, map) {
         var foundRow =
-            _createNewRow(_excel._sheets[sheet] as XmlElement, rowIndex!);
+            _createNewRow(_excel._sheets[sheet] as XmlElement, rowIndex);
         map.forEach((columnIndex, data) {
           if (data!.value != null) {
-            _updateCell(sheet, foundRow, columnIndex!, rowIndex, data.value);
+            _updateCell(sheet, foundRow, columnIndex, rowIndex, data.value);
           }
         });
       });
@@ -160,7 +160,7 @@ class Save {
               .add(XmlElement(
                 XmlName('sheetView'),
                 [
-                  if (sheetObject!.isRTL!)
+                  if (sheetObject!.isRTL)
                     XmlAttribute(XmlName('rightToLeft'), '1'),
                   XmlAttribute(XmlName('workbookViewId'), '0'),
                 ],
@@ -176,7 +176,7 @@ class Save {
                 XmlElement(
                   XmlName('sheetView'),
                   [
-                    if (sheetObject!.isRTL!)
+                    if (sheetObject!.isRTL)
                       XmlAttribute(XmlName('rightToLeft'), '1'),
                     XmlAttribute(XmlName('workbookViewId'), '0'),
                   ],
@@ -260,17 +260,17 @@ class Save {
   /// Writing Font Color in [xl/styles.xml] from the Cells of the sheets.
 
   _processStylesFile() {
-    _innerCellStyle = <CellStyle?>[];
+    _innerCellStyle = <CellStyle>[];
     List<String?> innerPatternFill = <String?>[];
     List<_FontStyle> innerFontStyle = <_FontStyle>[];
 
     _excel._sheetMap.forEach((sheetName, sheetObject) {
-      sheetObject!._sheetData.forEach((_, colMap) {
+      sheetObject._sheetData.forEach((_, colMap) {
         colMap.forEach((_, dataObject) {
-          if (dataObject != null && dataObject.cellStyle != null) {
-            int pos = _checkPosition(_innerCellStyle, dataObject.cellStyle);
+          if (dataObject?.cellStyle != null) {
+            int pos = _checkPosition(_innerCellStyle, dataObject!.cellStyle!);
             if (pos == -1) {
-              _innerCellStyle.add(dataObject.cellStyle);
+              _innerCellStyle.add(dataObject.cellStyle!);
             }
           }
         });
@@ -279,7 +279,7 @@ class Save {
 
     _innerCellStyle.forEach((cellStyle) {
       _FontStyle _fs = _FontStyle(
-          bold: cellStyle!.isBold,
+          bold: cellStyle.isBold,
           italic: cellStyle.isItalic,
           fontColorHex: cellStyle.fontColor,
           underline: cellStyle.underline,
@@ -323,22 +323,18 @@ class Save {
               []),
 
         /// putting bold
-        if (fontStyleElement.isBold != null && fontStyleElement.isBold)
-          XmlElement(XmlName('b'), [], []),
+        if (fontStyleElement.isBold) XmlElement(XmlName('b'), [], []),
 
         /// putting italic
-        if (fontStyleElement.isItalic != null && fontStyleElement.isItalic)
-          XmlElement(XmlName('i'), [], []),
+        if (fontStyleElement.isItalic) XmlElement(XmlName('i'), [], []),
 
         /// putting single underline
-        if (fontStyleElement.underline != null &&
-            fontStyleElement.underline != Underline.None &&
+        if (fontStyleElement.underline != Underline.None &&
             fontStyleElement.underline == Underline.Single)
           XmlElement(XmlName('u'), [], []),
 
         /// putting double underline
-        if (fontStyleElement.underline != null &&
-            fontStyleElement.underline != Underline.None &&
+        if (fontStyleElement.underline != Underline.None &&
             fontStyleElement.underline != Underline.Single &&
             fontStyleElement.underline == Underline.Double)
           XmlElement(
@@ -416,7 +412,7 @@ class Save {
     }
 
     _innerCellStyle.forEach((cellStyle) {
-      String? backgroundColor = cellStyle!.backgroundColor;
+      String? backgroundColor = cellStyle.backgroundColor;
 
       _FontStyle _fs = _FontStyle(
           bold: cellStyle.isBold,
@@ -461,7 +457,6 @@ class Save {
       if (horizontalALign != HorizontalAlign.Left ||
           textWrapping != null ||
           verticalAlign != VerticalAlign.Bottom ||
-          rotation != null ||
           rotation != 0) {
         attributes.add(XmlAttribute(XmlName('applyAlignment'), '1'));
         var childAttributes = <XmlAttribute>[];
@@ -484,7 +479,7 @@ class Save {
               horizontalALign == HorizontalAlign.Right ? 'right' : 'center';
           childAttributes.add(XmlAttribute(XmlName('horizontal'), '$hor'));
         }
-        if (rotation != null && rotation != 0) {
+        if (rotation != 0) {
           childAttributes
               .add(XmlAttribute(XmlName('textRotation'), '$rotation'));
         }
@@ -608,13 +603,16 @@ class Save {
             null) {
       CellStyle? cellStyle = _excel
           ._sheetMap[sheet]!._sheetData[rowIndex]![columnIndex]!.cellStyle;
-      int upperLevelPos = _checkPosition(_excel._cellStyleList, cellStyle);
-      if (upperLevelPos == -1) {
-        int lowerLevelPos = _checkPosition(_innerCellStyle, cellStyle);
-        if (lowerLevelPos != -1) {
-          upperLevelPos = lowerLevelPos + _excel._cellStyleList.length;
-        } else {
-          upperLevelPos = 0;
+      int upperLevelPos = 0;
+      if (cellStyle != null) {
+        upperLevelPos = _checkPosition(_excel._cellStyleList, cellStyle);
+        if (upperLevelPos == -1) {
+          int lowerLevelPos = _checkPosition(_innerCellStyle, cellStyle);
+          if (lowerLevelPos != -1) {
+            upperLevelPos = lowerLevelPos + _excel._cellStyleList.length;
+          } else {
+            upperLevelPos = 0;
+          }
         }
       }
       attributes.insert(

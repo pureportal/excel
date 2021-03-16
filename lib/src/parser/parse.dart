@@ -3,11 +3,11 @@ part of excel;
 class Parser {
   late Excel _excel;
   late List<String?> _rId;
-  late Map<String?, String?> _worksheetTargets;
+  late Map<String, String?> _worksheetTargets;
   Parser._(Excel excel) {
     this._excel = excel;
     this._rId = <String?>[];
-    this._worksheetTargets = <String?, String?>{};
+    this._worksheetTargets = <String, String?>{};
   }
 
   _startParsing() {
@@ -47,19 +47,21 @@ class Parser {
 
       document.findAllElements('Relationship').forEach((node) {
         String? id = node.getAttribute('Id');
-        switch (node.getAttribute('Type')) {
-          case _relationshipsStyles:
-            _excel._stylesTarget = node.getAttribute('Target');
-            break;
-          case _relationshipsWorksheet:
-            _worksheetTargets[id] = node.getAttribute('Target');
-            break;
-          case _relationshipsSharedStrings:
-            _excel._sharedStringsTarget = node.getAttribute('Target');
-            break;
-        }
-        if (!_rId.contains(id)) {
-          _rId.add(id);
+        if (id != null) {
+          switch (node.getAttribute('Type')) {
+            case _relationshipsStyles:
+              _excel._stylesTarget = node.getAttribute('Target');
+              break;
+            case _relationshipsWorksheet:
+              _worksheetTargets[id] = node.getAttribute('Target');
+              break;
+            case _relationshipsSharedStrings:
+              _excel._sharedStringsTarget = node.getAttribute('Target');
+              break;
+          }
+          if (!_rId.contains(id)) {
+            _rId.add(id);
+          }
         }
       });
     } else {
@@ -176,13 +178,13 @@ class Parser {
     _excel._sheets.forEach((sheetName, node) {
       _excel._availSheet(sheetName);
       XmlElement elementNode = node as XmlElement;
-      List spanList = List<String>();
+      List spanList = <String>[];
 
       elementNode.findAllElements('mergeCell').forEach((elemen) {
         String? ref = elemen.getAttribute('ref');
         if (ref != null && ref.contains(':') && ref.split(':').length == 2) {
-          if (!_excel._sheetMap!['$sheetName']!._spannedItems.contains(ref)) {
-            _excel._sheetMap!['$sheetName']!._spannedItems.add(ref);
+          if (!_excel._sheetMap[sheetName]!._spannedItems.contains(ref)) {
+            _excel._sheetMap[sheetName]!._spannedItems.add(ref);
           }
 
           String startCell = ref.split(':')[0], endCell = ref.split(':')[1];
@@ -197,8 +199,8 @@ class Parser {
           _Span spanObj = _Span();
           spanObj._start = [startIndex[0], startIndex[1]];
           spanObj._end = [endIndex[0], endIndex[1]];
-          if (!_excel._sheetMap!['$sheetName']!._spanList.contains(spanObj)) {
-            _excel._sheetMap!['$sheetName']!._spanList.add(spanObj);
+          if (!_excel._sheetMap[sheetName]!._spanList.contains(spanObj)) {
+            _excel._sheetMap[sheetName]?._spanList.add(spanObj);
           }
           _excel._mergeChangeLookup = sheetName;
         }
@@ -206,12 +208,12 @@ class Parser {
     });
 
     // Remove those cells which are present inside the
-    _excel._sheetMap!.forEach((sheetName, sheetObject) {
+    _excel._sheetMap.forEach((sheetName, sheetObject) {
       if (spannedCells.containsKey(sheetName)) {
-        sheetObject!._sheetData.forEach((row, colMap) {
+        sheetObject._sheetData.forEach((row, colMap) {
           colMap.forEach((col, dataObject) {
-            if (!(spannedCells[sheetName].contains(getCellId(col!, row!)))) {
-              _excel['$sheetName']!._sheetData[row]!.remove(col);
+            if (!(spannedCells[sheetName].contains(getCellId(col, row)))) {
+              _excel['$sheetName']._sheetData[row]!.remove(col);
             }
           });
         });
@@ -225,12 +227,11 @@ class Parser {
     if (styles != null) {
       styles.decompress();
       var document = XmlDocument.parse(utf8.decode(styles.content));
-      if (_excel._xmlFiles != null) {
-        _excel._xmlFiles['xl/$_stylesTarget'] = document;
-      }
-      _excel._fontStyleList = List<_FontStyle>();
-      _excel._patternFill = List<String?>();
-      _excel._cellStyleList = List<CellStyle>();
+      _excel._xmlFiles['xl/$_stylesTarget'] = document;
+
+      _excel._fontStyleList = <_FontStyle>[];
+      _excel._patternFill = <String?>[];
+      _excel._cellStyleList = <CellStyle>[];
 
       Iterable<XmlElement> fontList = document.findAllElements('font');
 
@@ -252,12 +253,12 @@ class Parser {
 
           String? fontColor = "FF000000", backgroundColor = "none", fontFamily;
           int fontSize = 12;
-          bool? isBold, isItalic;
+          bool isBold = false, isItalic = false;
           Underline underline = Underline.None;
           HorizontalAlign horizontalAlign = HorizontalAlign.Left;
           VerticalAlign verticalAlign = VerticalAlign.Bottom;
           TextWrapping? textWrapping;
-          int? rotation;
+          int rotation = 0;
           int fontId = _getFontIndex(node, 'fontId');
           _FontStyle _fontStyle = _FontStyle();
 
@@ -409,11 +410,11 @@ class Parser {
     var name = node.getAttribute('name');
     var target = _worksheetTargets[node.getAttribute('r:id')];
 
-    if (!_isContain(_excel._sheetMap!['$name'])) {
-      _excel._sheetMap!['$name'] = Sheet._(_excel, '$name');
+    if (!_isContain(_excel._sheetMap['$name'])) {
+      _excel._sheetMap['$name'] = Sheet._(_excel, '$name');
     }
 
-    Sheet sheetObject = _excel._sheetMap!['$name']!;
+    Sheet sheetObject = _excel._sheetMap['$name']!;
 
     var file = _excel._archive.findFile('xl/$target')!;
     file.decompress();
@@ -433,18 +434,18 @@ class Parser {
     var sheet = worksheet.findElements('sheetData').first;
 
     _findRows(sheet).forEach((child) {
-      _parseRow(child, sheetObject, name);
+      _parseRow(child, sheetObject, '$name');
     });
 
-    _excel._sheets[name] = sheet;
+    _excel._sheets['$name'] = sheet;
 
     _excel._xmlFiles['xl/$target'] = content;
-    _excel._xmlSheetId[name] = 'xl/$target';
+    _excel._xmlSheetId['$name'] = 'xl/$target';
 
     _normalizeTable(sheetObject);
   }
 
-  _parseRow(XmlElement node, Sheet sheetObject, String? name) {
+  _parseRow(XmlElement node, Sheet sheetObject, String name) {
     var rowIndex = _getRowNumber(node) - 1;
 
     _findCells(node).forEach((child) {
@@ -452,7 +453,7 @@ class Parser {
     });
   }
 
-  _parseCell(XmlElement node, Sheet sheetObject, int rowIndex, String? name) {
+  _parseCell(XmlElement node, Sheet sheetObject, int rowIndex, String name) {
     int colIndex = _getCellNumber(node);
 
     var s1 = node.getAttribute('s');
@@ -506,7 +507,7 @@ class Parser {
         var valueNode = node.findElements('v');
         var formulaNode = node.findElements('f');
         var content = valueNode.first;
-        if (formulaNode != null && formulaNode.isNotEmpty) {
+        if (formulaNode.isNotEmpty) {
           value = Formula.custom(_parseValue(formulaNode.first).toString());
         } else {
           if (s1 != null) {
@@ -575,7 +576,7 @@ class Parser {
   ///
   ///
   _createSheet(String? newSheet) {
-    print('create Sheet: $newSheet');
+    //print('create Sheet: $newSheet');
     /* List<XmlNode> list = _excel._xmlFiles['xl/workbook.xml']
         .findAllElements('sheets')
         .first
@@ -584,8 +585,8 @@ class Parser {
       throw ArgumentError('');
     } */
 
-    int _sheetId = -1;
-    List<int> sheetIdList = List<int>();
+    var _sheetId = -1;
+    var sheetIdList = <int>[];
 
     _excel._xmlFiles['xl/workbook.xml']!
         .findAllElements('sheet')

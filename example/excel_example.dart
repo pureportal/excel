@@ -4,10 +4,10 @@ import 'package:excel/excel.dart';
 
 void main(List<String> args) {
   var file = "/Users/kawal/Desktop/excel/test/test_resources/example.xlsx";
-  var bytes = File(file).readAsBytesSync();
-  //var excel = Excel.createExcel();
+  //var bytes = File(file).readAsBytesSync();
+  var excel = Excel.createExcel();
   // or
-  var excel = Excel.decodeBytes(bytes);
+  //var excel = Excel.decodeBytes(bytes);
   for (var table in excel.tables.keys) {
     print(table);
     print(excel.tables[table]!.maxCols);
@@ -20,19 +20,19 @@ void main(List<String> args) {
   //
   // Change sheet from rtl to ltr and vice-versa
   //
-  var sheet1rtl = excel['Sheet1']!.isRTL;
+  var sheet1rtl = excel['Sheet1'].isRTL;
 
-  excel['Sheet1']!.isRTL = false;
-
-  print(
-      'Sheet1: ((previous) isRTL: $sheet1rtl) ---> ((current) isRTL: ${excel['Sheet1']!.isRTL})');
-
-  var sheet2rtl = excel['Sheet2']!.isRTL;
-
-  excel['Sheet2']!.isRTL = true;
+  excel['Sheet1'].isRTL = false;
 
   print(
-      'Sheet2: ((previous) isRTL: $sheet2rtl) ---> ((current) isRTL: ${excel['Sheet2']!.isRTL})');
+      'Sheet1: ((previous) isRTL: $sheet1rtl) ---> ((current) isRTL: ${excel['Sheet1'].isRTL})');
+
+  var sheet2rtl = excel['Sheet2'].isRTL;
+
+  excel['Sheet2'].isRTL = true;
+
+  print(
+      'Sheet2: ((previous) isRTL: $sheet2rtl) ---> ((current) isRTL: ${excel['Sheet2'].isRTL})');
 
   CellStyle cellStyle = CellStyle(
     bold: true,
@@ -42,7 +42,7 @@ void main(List<String> args) {
   );
   cellStyle.rotation = -50;
 
-  var sheet = excel['mySheet']!;
+  var sheet = excel['mySheet'];
 
   var cell = sheet.cell(CellIndex.indexByString("A1"))!;
   cell.value = "Heya How are you I am fine ok goood night";
@@ -75,7 +75,7 @@ void main(List<String> args) {
 
   excel.unLink('sheet1');
 
-  sheet = excel['sheet']!;
+  sheet = excel['sheet'];
 
   /// appending rows and checking the time complexity of it
   /* List<List<String>> list = List.generate(6000, (index) => List.generate(20, (index1) => '$index $index1'));
@@ -99,9 +99,9 @@ void main(List<String> args) {
 
   String outputFile = "/Users/kawal/Desktop/r.xlsx";
 
-  excel.save().then((fileBytes) {
-    File(join(outputFile))
-      ..createSync(recursive: true)
-      ..writeAsBytesSync(fileBytes!);
-  });
+  var fileBytes = excel.save();
+
+  File(join(outputFile))
+    ..createSync(recursive: true)
+    ..writeAsBytesSync(fileBytes!);
 }

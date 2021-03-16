@@ -138,7 +138,7 @@ class Excel {
     if (_sheetMap[sheet] != null) {
       /// copying the sheet into itself
       /// thus resulting in breaking the linkage as Sheet._clone() will provide new reference;
-      /// 
+      ///
       /// if copy is false then null is returned.
       if (!copy(sheet, sheet)) {
         return null;
@@ -504,7 +504,7 @@ class Excel {
   ///
   ///Make `sheet` available if it does not exist in `_sheetMap`
   ///
-/*   Sheet _availSheet(String sheet) {
+  Sheet _availSheet(String sheet) {
     late var newSheet;
 
     if (_sheetMap[sheet] == null) {
@@ -512,7 +512,7 @@ class Excel {
     }
     newSheet = _sheetMap[sheet];
     return newSheet;
-  } */
+  }
 
   ///
   ///Updates the contents of `sheet` of the `cellIndex: CellIndex.indexByColumnRow(0, 0);` where indexing starts from 0

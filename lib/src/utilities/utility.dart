@@ -60,7 +60,7 @@ int _getRowNumber(XmlElement row) {
   return int.parse(row.getAttribute('r')!);
 }
 
-int _checkPosition(List<CellStyle> list, CellStyle? cellStyle) {
+int _checkPosition(List<CellStyle> list, CellStyle cellStyle) {
   for (int i = 0; i < list.length; i++) {
     if (list[i] == cellStyle) {
       return i;

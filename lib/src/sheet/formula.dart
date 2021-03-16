@@ -1,7 +1,7 @@
 part of excel;
 
 class Formula {
-  String? _formula;
+  late String _formula;
 
   Formula._(String formula) {
     this._formula = formula;
@@ -21,7 +21,6 @@ class Formula {
   ///var my_custom_formula = Formula.custom('SUM(1,2)');
   ///```
   static Formula custom(String formula) {
-    if (formula == null) return null;
     return Formula._(formula);
   }
 
@@ -65,7 +64,7 @@ class Formula {
   /// list is the cellIndexList in the format of CellId as A1 or B90 ... or it can be values of formulas
   static List<dynamic> _getParsedList(
       Sheet sheet, List<dynamic> cellIndexList) {
-    List<dynamic> list = List<String?>();
+    List<dynamic> list = <String?>[];
     for (var val in cellIndexList) {
       if (val is CellIndex) {
         list.add(val.cellId);
@@ -99,18 +98,17 @@ class Formula {
   static List<CellIndex> _expandCellIndexList(
       Sheet sheet, CellIndex start, CellIndex end) {
     List<CellIndex> indexList = <CellIndex>[];
-    if (start != null && end != null) {
-      sheet._checkMaxCol(start.columnIndex!);
-      sheet._checkMaxRow(start.rowIndex!);
-      sheet._checkMaxCol(end.columnIndex!);
-      sheet._checkMaxRow(end.rowIndex!);
-      for (var i = start.rowIndex!; i <= end.rowIndex!; i++) {
-        for (var j = start.columnIndex!; j <= end.columnIndex!; j++) {
+      sheet._checkMaxCol(start.columnIndex);
+      sheet._checkMaxRow(start.rowIndex);
+      sheet._checkMaxCol(end.columnIndex);
+      sheet._checkMaxRow(end.rowIndex);
+      for (var i = start.rowIndex; i <= end.rowIndex; i++) {
+        for (var j = start.columnIndex; j <= end.columnIndex; j++) {
           indexList
               .add(CellIndex.indexByColumnRow(columnIndex: j, rowIndex: i));
         }
       }
-    }
+    
     return indexList;
   }
 
